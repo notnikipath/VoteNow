@@ -43,7 +43,7 @@ VoteNow is a microservice platform for online surveys and voting with respondent
 ## Local run
 
 ```bash
-cd d:\Шарага\Кинжа13\Task_29_VoteNow
+cd 'your/project/folder'
 docker compose up --build -d
 ```
 
