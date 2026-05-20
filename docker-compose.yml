@@ -1,0 +1,154 @@
+﻿services:
+  api-gateway:
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
+    container_name: votenow-api-gateway
+    env_file: .env
+    ports:
+      - "32082:8500"
+    depends_on:
+      - survey-service
+      - response-service
+      - verification-service
+      - analytics-service
+      - export-service
+      - notification-service
+    networks: [votenow-net]
+
+  survey-service:
+    build:
+      context: .
+      dockerfile: survey-service/Dockerfile
+    container_name: votenow-survey
+    env_file: .env
+    ports:
+      - "32083:8501"
+    depends_on:
+      - postgres
+      - redis
+    networks: [votenow-net]
+
+  response-service:
+    build:
+      context: .
+      dockerfile: response-service/Dockerfile
+    container_name: votenow-response
+    env_file: .env
+    ports:
+      - "32084:8502"
+    depends_on:
+      - survey-service
+      - verification-service
+      - analytics-service
+      - redis
+    networks: [votenow-net]
+
+  verification-service:
+    build:
+      context: .
+      dockerfile: verification-service/Dockerfile
+    container_name: votenow-verification
+    env_file: .env
+    ports:
+      - "32085:8503"
+    depends_on:
+      - redis
+      - notification-service
+    networks: [votenow-net]
+
+  analytics-service:
+    build:
+      context: .
+      dockerfile: analytics-service/Dockerfile
+    container_name: votenow-analytics
+    env_file: .env
+    ports:
+      - "32086:8504"
+    depends_on:
+      - redis
+      - postgres
+    networks: [votenow-net]
+
+  export-service:
+    build:
+      context: .
+      dockerfile: export-service/Dockerfile
+    container_name: votenow-export
+    env_file: .env
+    ports:
+      - "32087:8505"
+    depends_on:
+      - analytics-service
+      - redis
+    volumes:
+      - votenow_exports_data:/tmp/votenow-exports
+    networks: [votenow-net]
+
+  export-worker:
+    build:
+      context: .
+      dockerfile: export-service/Dockerfile
+    container_name: votenow-export-worker
+    env_file: .env
+    command: celery -A app.tasks.celery_app worker -l info
+    depends_on:
+      - export-service
+      - redis
+    volumes:
+      - votenow_exports_data:/tmp/votenow-exports
+    networks: [votenow-net]
+
+  notification-service:
+    build:
+      context: .
+      dockerfile: notification-service/Dockerfile
+    container_name: votenow-notification
+    env_file: .env
+    ports:
+      - "32088:8506"
+    depends_on:
+      - redis
+    networks: [votenow-net]
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      args:
+        VITE_API_GATEWAY_URL: ${VITE_API_GATEWAY_URL:-http://localhost:32082}
+    container_name: votenow-frontend
+    env_file: .env
+    ports:
+      - "32089:5178"
+    depends_on:
+      - api-gateway
+    networks: [votenow-net]
+
+  postgres:
+    image: postgres:16
+    container_name: votenow-postgres
+    environment:
+      POSTGRES_DB: votenow
+      POSTGRES_USER: votenow
+      POSTGRES_PASSWORD: votenow
+    ports:
+      - "32090:5432"
+    volumes:
+      - votenow_postgres_data:/var/lib/postgresql/data
+    networks: [votenow-net]
+
+  redis:
+    image: redis:7
+    container_name: votenow-redis
+    ports:
+      - "32091:6379"
+    networks: [votenow-net]
+
+networks:
+  votenow-net:
+    driver: bridge
+
+volumes:
+  votenow_postgres_data:
+  votenow_exports_data:
