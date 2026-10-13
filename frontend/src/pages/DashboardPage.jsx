@@ -83,7 +83,7 @@ export function DashboardPage() {
     <div className="page-shell">
       <header className="hero">
         <p className="tag">VoteNow Live Platform</p>
-        <h1>Public surveys, anti-fraud response collection, verification, and real-time results.</h1>
+        <h1>Surveys and results</h1>
         <div className="hero-controls">
           <input value={token} onChange={(event) => setToken(event.target.value)} placeholder="Public token" />
           <button onClick={reload}>Refresh</button>
@@ -115,7 +115,7 @@ export function DashboardPage() {
 
       {error ? <div className="error-box">{error}</div> : null}
 
-      <main className="content-grid">
+      <section className="content-grid">
         <form className="survey-card" onSubmit={submitSurvey}>
           <h2>{survey?.title || "Survey"}</h2>
           <p>{survey?.description}</p>
@@ -172,7 +172,7 @@ export function DashboardPage() {
             ))}
           </div>
         </section>
-      </main>
+      </section>
     </div>
   );
 }

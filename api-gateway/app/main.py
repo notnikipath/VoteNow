@@ -100,7 +100,9 @@ def _is_missing_survey_analytics(error: HTTPException) -> bool:
     return "Survey analytics not found" in str(error.detail)
 
 
-async def _load_analytics_bundle(client: httpx.AsyncClient, survey_id: str) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
+async def _load_analytics_bundle(
+    client: httpx.AsyncClient, survey_id: str
+) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
     live = await _get_json(client, f"{settings.analytics_service_url}/analytics/{survey_id}/live")
     charts = await _get_json(client, f"{settings.analytics_service_url}/analytics/{survey_id}/charts")
     tables = await _get_json(client, f"{settings.analytics_service_url}/analytics/{survey_id}/tables")
