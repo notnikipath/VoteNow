@@ -20,4 +20,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: docker compose config
+      - run: |
+          cp .env.example .env
+          docker compose config --quiet
